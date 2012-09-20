@@ -8691,24 +8691,8 @@ static int tabla_resume(struct device *dev)
 	struct tabla_priv *tabla = platform_get_drvdata(pdev);
 
 	dev_dbg(dev, "%s: system resume tabla %p\n", __func__, tabla);
-	if (tabla) {
-		TABLA_ACQUIRE_LOCK(tabla->codec_resource_lock);
+	if (tabla)
 		tabla->mbhc_last_resume = jiffies;
-		if (tabla->gpio_irq_resend) {
-			WARN_ON(!tabla->mbhc_cfg.gpio_irq);
-			tabla->gpio_irq_resend = false;
-
-			irq = tabla->mbhc_cfg.gpio_irq;
-			pr_debug("%s: Resending GPIO IRQ %d\n", __func__, irq);
-			irq_set_pending(irq);
-			check_irq_resend(irq_to_desc(irq), irq);
-
-			/* release suspend lock */
-			wake_unlock(&tabla->irq_resend_wlock);
-		}
-		TABLA_RELEASE_LOCK(tabla->codec_resource_lock);
-	}
-
 	return 0;
 }
 
