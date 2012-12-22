@@ -36,6 +36,7 @@
 
 #include <linux/input/lge_touch_core.h>
 
+<<<<<<< HEAD
 #ifdef CUST_G_TOUCH
 #include "./DS4/RefCode.h"
 #include "./DS4/RefCode_PDTScan.h"
@@ -72,6 +73,14 @@ struct lge_touch_data
 
 struct touch_device_driver*	touch_device_func;
 struct workqueue_struct*	touch_wq;
+=======
+#ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+#include <linux/input/sweep2wake.h>
+#endif
+
+struct touch_device_driver*     touch_device_func;
+struct workqueue_struct*        touch_wq;
+>>>>>>> 93e222e... drivers/touchscreen: add sweep2wake
 
 struct lge_touch_attribute {
 	struct attribute	attr;
@@ -127,6 +136,7 @@ static void touch_early_suspend(struct early_suspend *h);
 static void touch_late_resume(struct early_suspend *h);
 #endif
 
+<<<<<<< HEAD
 /* Auto Test interface for some model */
 struct lge_touch_data *touch_test_dev = NULL;
 EXPORT_SYMBOL(touch_test_dev);
@@ -517,6 +527,27 @@ int get_touch_ts_fw_version(char *fw_ver)
 EXPORT_SYMBOL(get_touch_ts_fw_version);
 
 
+=======
+#ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+/* gives back true if only one touch is recognized */
+bool is_single_touch(struct lge_touch_data *ts)
+{
+        int i = 0, cnt = 0;
+
+        for( i = 0; i < ts->pdata->caps->max_id; i++ ) {
+                if ((!ts->ts_data.curr_data[i].state) ||
+                    (ts->ts_data.curr_data[i].state == ABS_RELEASE))
+                        continue;
+                else cnt++;
+        }
+        if (cnt == 1)
+                return true;
+        else
+                return false;
+}
+#endif
+
+>>>>>>> 93e222e... drivers/touchscreen: add sweep2wake
 /* set_touch_handle / get_touch_handle
  *
  * Developer can save their object using 'set_touch_handle'.
@@ -1983,6 +2014,7 @@ static void touch_work_func_b(struct work_struct *work)
 		ts->ts_data.curr_button.key_code = KEY_PANEL;
 		break;
 
+<<<<<<< HEAD
 	case OP_LOCK:
 		for (id = 0; id < ts->pdata->caps->max_id; id++){
 			if (ts->ts_data.curr_data[id].status == FINGER_PRESSED) {
@@ -1990,6 +2022,28 @@ static void touch_work_func_b(struct work_struct *work)
 					ts->ts_data.curr_button.key_code = KEY_PANEL;
 					ts->ts_data.state = ABS_PRESS;
 				}
+=======
+			/* Only support circle region */
+			if (is_width_major)
+				input_report_abs(ts->input_dev,
+					ABS_MT_TOUCH_MAJOR,
+					ts->ts_data.curr_data[id].width_major);
+
+			if (is_width_minor)
+				input_report_abs(ts->input_dev,
+					ABS_MT_TOUCH_MINOR,
+					ts->ts_data.curr_data[id].width_minor);
+
+#ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+                        detect_sweep2wake(ts->ts_data.curr_data[id].x_position, ts->ts_data.curr_data[id].y_position, ts);
+#endif
+
+#ifdef LGE_TOUCH_POINT_DEBUG
+			if (id == 0 && tr_last_index < MAX_TRACE) {
+				tr_data[tr_last_index].x = ts->ts_data.curr_data[id].x_position;
+				tr_data[tr_last_index].y = ts->ts_data.curr_data[id].y_position;
+				tr_data[tr_last_index++].time = ktime_to_ms(ktime_get());
+>>>>>>> 93e222e... drivers/touchscreen: add sweep2wake
 			}
 		}
 		break;
@@ -2013,6 +2067,7 @@ abs_report:
 			ts->ts_data.prev_total_num = 0;
 		}
 		else {
+<<<<<<< HEAD
 			if (likely(touch_debug_mask & DEBUG_ABS))
 				check_log_finger_changed(ts, i);
 
@@ -2039,6 +2094,20 @@ abs_report:
 		if (ts->ts_data.curr_data[0].y_position < ts->pdata->caps->y_button_boundary){
 			input_sync(ts->input_dev);
 			goto abs_report;
+=======
+			ts->ts_data.curr_data[id].state = 0;
+#ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+                        if (s2w_switch > 0) {
+                                exec_count = true;
+                                barrier[0] = false;
+                                barrier[1] = false;
+                                scr_on_touch = false;
+                        }
+#endif
+#ifdef LGE_TOUCH_POINT_DEBUG
+			dump_pointer_trace();
+#endif
+>>>>>>> 93e222e... drivers/touchscreen: add sweep2wake
 		}
 		break;
 	case TOUCH_BUTTON_LOCK:
@@ -2218,6 +2287,7 @@ static void touch_fw_upgrade_func(struct work_struct *work_fw_upgrade)
 	do_gettimeofday(&t_debug[TIME_FW_UPGRADE_END]);
 #endif
 
+<<<<<<< HEAD
 	touch_power_cntl(ts, POWER_OFF);
 
 	if (saved_state != POWER_OFF) {
@@ -2225,6 +2295,16 @@ static void touch_fw_upgrade_func(struct work_struct *work_fw_upgrade)
 		msleep(ts->pdata->role->booting_delay);
 
 		if (ts->pdata->role->operation_mode)
+=======
+	if (!ts->curr_resume_state) {
+#ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+                if (s2w_switch == 0)
+#endif
+                        touch_power_cntl(ts, POWER_OFF);
+	}
+	else {
+		if (ts->pdata->role->operation_mode == INTERRUPT_MODE)
+>>>>>>> 93e222e... drivers/touchscreen: add sweep2wake
 			enable_irq(ts->client->irq);
 		else
 			hrtimer_start(&ts->timer, ktime_set(0, ts->pdata->role->report_period), HRTIMER_MODE_REL);
@@ -3465,8 +3545,18 @@ static int touch_probe(struct i2c_client *client, const struct i2c_device_id *id
 		gpio_direction_input(ts->pdata->int_pin);
 
 		ret = request_threaded_irq(client->irq, touch_irq_handler,
+<<<<<<< HEAD
 				touch_thread_irq_handler,
 				ts->pdata->role->irqflags | IRQF_ONESHOT, client->name, ts);
+=======
+				NULL,
+#ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+				ts->pdata->role->irqflags | IRQF_ONESHOT | IRQF_TRIGGER_LOW | IRQF_NO_SUSPEND,
+#else
+				ts->pdata->role->irqflags | IRQF_ONESHOT,
+#endif
+				client->name, ts);
+>>>>>>> 93e222e... drivers/touchscreen: add sweep2wake
 
 		if (ret < 0) {
 			TOUCH_ERR_MSG("request_irq failed. use polling mode\n");
@@ -3629,6 +3719,10 @@ static void touch_early_suspend(struct early_suspend *h)
 	struct lge_touch_data *ts =
 			container_of(h, struct lge_touch_data, early_suspend);
 
+#ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+        scr_suspended = true;
+#endif
+
 	if (unlikely(touch_debug_mask & DEBUG_TRACE))
 		TOUCH_DEBUG_MSG("\n");
 
@@ -3637,6 +3731,7 @@ static void touch_early_suspend(struct early_suspend *h)
 		return;
 	}
 
+<<<<<<< HEAD
 #ifdef CUST_G_TOUCH
 	if (ts->pdata->role->ghost_detection_enable) {
 		resume_flag = 0;
@@ -3661,12 +3756,40 @@ static void touch_early_suspend(struct early_suspend *h)
 	release_all_ts_event(ts);
 
 	touch_power_cntl(ts, ts->pdata->role->suspend_pwr);
+=======
+#ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+        if (s2w_switch == 0)
+#endif
+        {
+	        if (ts->pdata->role->operation_mode == INTERRUPT_MODE)
+		                disable_irq(ts->client->irq);
+	        else
+		        hrtimer_cancel(&ts->timer);
+
+	        cancel_work_sync(&ts->work);
+	        cancel_delayed_work_sync(&ts->work_init);
+	        if (ts->pdata->role->key_type == TOUCH_HARD_KEY)
+		        cancel_delayed_work_sync(&ts->work_touch_lock);
+
+	        release_all_ts_event(ts);
+
+	        touch_power_cntl(ts, ts->pdata->role->suspend_pwr);
+        }
+#ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+        else if (s2w_switch > 0)
+                enable_irq_wake(ts->client->irq);
+#endif
+>>>>>>> 93e222e... drivers/touchscreen: add sweep2wake
 }
 
 static void touch_late_resume(struct early_suspend *h)
 {
 	struct lge_touch_data *ts =
 			container_of(h, struct lge_touch_data, early_suspend);
+
+#ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+        scr_suspended = false;
+#endif
 
 	if (unlikely(touch_debug_mask & DEBUG_TRACE))
 		TOUCH_DEBUG_MSG("\n");
@@ -3676,6 +3799,7 @@ static void touch_late_resume(struct early_suspend *h)
 		return;
 	}
 
+<<<<<<< HEAD
 	touch_power_cntl(ts, ts->pdata->role->resume_pwr);
 #ifdef CUST_G_TOUCH
 	if (ts->pdata->role->ghost_detection_enable) {
@@ -3694,6 +3818,31 @@ static void touch_late_resume(struct early_suspend *h)
 				msecs_to_jiffies(ts->pdata->role->booting_delay));
 	else
 		queue_delayed_work(touch_wq, &ts->work_init, 0);
+=======
+#ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+        if (s2w_switch == 0)
+#endif
+        {
+	        touch_power_cntl(ts, ts->pdata->role->resume_pwr);
+
+	        if (ts->pdata->role->operation_mode == INTERRUPT_MODE)
+		        enable_irq(ts->client->irq);
+	        else
+		        hrtimer_start(&ts->timer,
+			        ktime_set(0, ts->pdata->role->report_period),
+					        HRTIMER_MODE_REL);
+
+	        if (ts->pdata->role->resume_pwr == POWER_ON)
+		        queue_delayed_work(touch_wq, &ts->work_init,
+			        msecs_to_jiffies(ts->pdata->role->booting_delay));
+	        else
+		        queue_delayed_work(touch_wq, &ts->work_init, 0);
+        }
+#ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+        else if (s2w_switch > 0)
+                disable_irq_wake(ts->client->irq);
+#endif
+>>>>>>> 93e222e... drivers/touchscreen: add sweep2wake
 }
 #endif
 
