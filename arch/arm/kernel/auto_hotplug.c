@@ -198,6 +198,7 @@ static void hotplug_online_all_work_fn(struct work_struct *work)
 		if (!cpu_online(cpu)) {
 			cpu_up(cpu);
 			pr_info("auto_hotplug: CPU%d up.\n", cpu);
+			return;
 		}
 	}
 }
