@@ -52,6 +52,11 @@
 #include <linux/wakelock.h>
 #include <linux/platform_data/hds_fsa8008.h>
 
+#define FSA8008_USE_WORK_QUEUE
+#define FSA8008_KEY_LATENCY_TIME	140 /* in ms */
+#define FSA8008_DEBOUNCE_TIME		350 /* in ms */
+#define FSA8008_WAKELOCK_TIMEOUT	(HZ)
+
 #ifdef CONFIG_LGE_AUX_NOISE
 /*
  * 2012-07-20, bob.cho@lge.com
@@ -71,6 +76,11 @@
 
 #if defined(LGE_HSD_DEBUG_PRINT)
 #define HSD_DBG(fmt, args...) printk(KERN_INFO "HSD.fsa8008[%-18s:%5d]" fmt, __func__, __LINE__, ## args)
+
+#define HSD_DEBUG_PRINT
+
+#ifdef HSD_DEBUG_PRINT
+#define HSD_DBG(fmt, args...) printk(KERN_DEBUG "%s: " fmt, __func__, ##args)
 #else
 #define HSD_DBG(fmt, args...) do {} while (0)
 #endif
