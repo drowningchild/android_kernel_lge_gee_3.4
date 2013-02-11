@@ -276,6 +276,7 @@ static int __cpuinit msm_cpufreq_cpu_callback(struct notifier_block *nfb,
 
 static struct notifier_block __refdata msm_cpufreq_cpu_notifier = {
 	.notifier_call = msm_cpufreq_cpu_callback,
+;
 
 #ifdef CONFIG_CPU_FREQ_GOV_INTELLIDEMAND
 extern bool lmf_screen_state;
@@ -383,6 +384,8 @@ static struct cpufreq_driver msm_cpufreq_driver = {
 	.verify		= msm_cpufreq_verify,
 	.target		= msm_cpufreq_target,
 	.get		= msm_cpufreq_get_freq,
+	.suspend	= msm_cpufreq_suspend,
+	.resume		= msm_cpufreq_resume,
 	.name		= "msm",
 	.attr		= msm_freq_attr,
 };
