@@ -285,14 +285,7 @@ static void msm_cpu_early_suspend(struct early_suspend *h)
 {
 
 #ifdef CONFIG_CPU_FREQ_GOV_INTELLIDEMAND
-	int cpu = 0;
-
-	for_each_possible_cpu(cpu) {
-
-		mutex_lock(&per_cpu(cpufreq_suspend, cpu).suspend_mutex);
-		lmf_screen_state = false;
-		mutex_unlock(&per_cpu(cpufreq_suspend, cpu).suspend_mutex);
-	}
+	lmf_screen_state = false;
 #endif
 
 }
@@ -301,14 +294,7 @@ static void msm_cpu_late_resume(struct early_suspend *h)
 {
 
 #ifdef CONFIG_CPU_FREQ_GOV_INTELLIDEMAND
-	int cpu = 0;
-
-	for_each_possible_cpu(cpu) {
-
-		mutex_lock(&per_cpu(cpufreq_suspend, cpu).suspend_mutex);
-		lmf_screen_state = true;
-		mutex_unlock(&per_cpu(cpufreq_suspend, cpu).suspend_mutex);
-	}
+	lmf_screen_state = true;
 #endif
 
 }
