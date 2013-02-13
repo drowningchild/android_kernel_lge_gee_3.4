@@ -991,19 +991,8 @@ config TOUCHSCREEN_ATMEL_MAXT224E
 	Say Y here if you have an Atmel Maxtouch based touchscreen.
 
 	If unsure, say N.
+
 	To compile this driver as a module, choose M here: the
 	module will be called atmel_ts.
-
-config TOUCH_REG_MAP_TM2000
-	tristate "synaptics TM2000 touchscreen"
-	depends on TOUCHSCREEN_LGE_SYNAPTICS
-	default y
-	help
-	  Synaptics Register map TM2000.
-
-config TOUCHSCREEN_SWEEP2WAKE
-        tristate "Sweep2Wake for touchscreens"
-        default n
-
 endif
 
