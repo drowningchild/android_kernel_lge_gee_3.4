@@ -3709,11 +3709,6 @@ static void touch_early_suspend(struct early_suspend *h)
 		return;
 	}
 
-#ifdef CUST_G_TOUCH
-	if (ts->pdata->role->ghost_detection_enable) {
-		    resume_flag = 0;
-	}
-#endif
 #ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
         if (s2w_switch == 0)
 #endif
@@ -3754,8 +3749,6 @@ static void touch_late_resume(struct early_suspend *h)
 		TOUCH_INFO_MSG("late_resume is not executed\n");
 		return;
 	}
-;
-
 
 #ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
         if (s2w_switch == 0)
@@ -3769,12 +3762,7 @@ static void touch_late_resume(struct early_suspend *h)
 		        hrtimer_start(&ts->timer,
 			        ktime_set(0, ts->pdata->role->report_period),
 					        HRTIMER_MODE_REL);
-#ifdef CUST_G_TOUCH
-		if (ts->pdata->role->ghost_detection_enable) {
-			resume_flag = 1;
-			ts_rebase_count = 0;
-		}
-#endif
+
 	        if (ts->pdata->role->resume_pwr == POWER_ON)
 		        queue_delayed_work(touch_wq, &ts->work_init,
 			        msecs_to_jiffies(ts->pdata->role->booting_delay));
