@@ -50,6 +50,10 @@ static int PIF_CHECK;
 #define PRI_SRC_SEL_HFPLL	1
 #define PRI_SRC_SEL_HFPLL_DIV2	2
 
+/* PTE EFUSE register offset. */
+#define PTE_EFUSE		0xC0
+
+#define FREQ_TABLE_SIZE		37
 #define SECCLKAGD		BIT(4)
 
 #define FREQ_TABLE_SIZE    35
