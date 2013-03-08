@@ -38,7 +38,6 @@
 #include <linux/swap.h>
 #include <linux/rcupdate.h>
 #include <linux/notifier.h>
-#include <linux/swap.h>
 
 static uint32_t lowmem_debug_level = 1;
 static int lowmem_adj[6] = {
