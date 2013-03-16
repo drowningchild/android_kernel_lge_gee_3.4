@@ -179,18 +179,10 @@ static void lm3530_set_main_current_level(struct i2c_client *client, int level)
 
 	mutex_unlock(&main_lm3530_dev->bl_mutex);
 }
-/* motley - keep color alive after screen off/on */
-#ifdef CONFIG_LCD_KCAL
-extern int kcal_keep_color_alive(void);
-#endif
+//LGE_UPDATE_S hojin.ryu@lge.com Exponential BL level applied 20120731
 
 void lm3530_backlight_on(int level)
 {
-	struct lm3530_device *dev = i2c_get_clientdata(client);
-/* motley - keep color alive after screen off/on */
-#ifdef CONFIG_LCD_KCAL
-	int ret;
-#endif
 
 	if (backlight_status == BL_OFF) {
 		msleep(17);
@@ -214,15 +206,6 @@ void lm3530_backlight_on(int level)
 	lm3530_set_main_current_level(main_lm3530_dev->client, level);
 
 	return;
-	lm3530_set_main_current_level(dev->client, level);
-	backlight_status = BL_ON;
-	mutex_unlock(&backlight_mtx);
-	
-/* motley - keep color alive after screen off/on */
-#ifdef CONFIG_LCD_KCAL	
-	ret=kcal_keep_color_alive();
-	pr_debug("%s resetting preferred RGB value, return code:%d\n", __func__, ret);
-#endif
 }
 
 void lm3530_backlight_off(struct early_suspend * h)
